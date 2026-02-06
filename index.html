@@ -104,6 +104,15 @@
         .hidden {
             display: none;
         }
+        
+        /* Fun animation for the success message */
+        .dance {
+            animation: bounce 0.5s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-20px); }
+        }
     </style>
 </head>
 <body>
@@ -123,7 +132,7 @@
         </div>
         
         <div id="success-message" class="hidden">
-            <h1>Yay! See you on the 14th! 🥰</h1>
+            <h1 class="dance">Yay! See you on the 14th! 🥰</h1>
             <p>I love you, Denise!</p>
         </div>
     </div>
@@ -131,6 +140,7 @@
     <audio id="sound1" src="movie_1.mp3" preload="auto"></audio>
     <audio id="sound2" src="nooo.swf.mp3" preload="auto"></audio>
     <audio id="sound3" src="why-meme.mp3" preload="auto"></audio>
+    <audio id="tunak-sound" src="tunak-tunak-tun.mp3" preload="auto"></audio>
 
     <script>
         const noBtn = document.getElementById('no-btn');
@@ -139,12 +149,15 @@
         const successMessage = document.getElementById('success-message');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
-
-        // Create a list of the 3 sounds
-        const sounds = [
-            document.getElementById('sound1'), // Bruh
-            document.getElementById('sound2'), // Nooo
-            document.getElementById('sound3')  // Why
+        
+        // Audio elements
+        const tunakSound = document.getElementById('tunak-sound');
+        
+        // List of funny sounds for the NO button
+        const noSounds = [
+            document.getElementById('sound1'),
+            document.getElementById('sound2'),
+            document.getElementById('sound3')
         ];
 
         let yesSize = 1;
@@ -158,39 +171,36 @@
         ];
         let textIndex = 0;
 
-        // --- FIXED CLICK HANDLER (Unlocks all sounds) ---
+        // --- UNLOCK AUDIO ---
         startBtn.addEventListener('click', () => {
             overlay.style.opacity = '0';
             setTimeout(() => { overlay.style.display = 'none'; }, 500);
 
-            // Quickly play/pause all sounds to unlock them
-            sounds.forEach(sound => {
+            // Quickly wake up all sounds
+            noSounds.forEach(sound => {
                 sound.volume = 0.5;
-                sound.play().then(() => {
-                    sound.pause();
-                    sound.currentTime = 0;
-                }).catch(() => {});
+                sound.play().then(() => { sound.pause(); sound.currentTime = 0; }).catch(() => {});
             });
+            tunakSound.volume = 1.0; // Full volume for Tunak
+            tunakSound.play().then(() => { tunakSound.pause(); tunakSound.currentTime = 0; }).catch(() => {});
         });
 
         // --- NO BUTTON LOGIC ---
         noBtn.addEventListener('mouseover', () => {
-            // 1. PICK A RANDOM SOUND
-            // Stop all sounds first so they don't overlap
-            sounds.forEach(sound => {
-                sound.pause();
-                sound.currentTime = 0;
-            });
+            // Stop Tunak if it's somehow playing
+            tunakSound.pause(); 
+            tunakSound.currentTime = 0;
 
-            // Randomly choose sound 0, 1, or 2
-            const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+            // Pick random funny sound
+            noSounds.forEach(s => { s.pause(); s.currentTime = 0; }); // Stop others
+            const randomSound = noSounds[Math.floor(Math.random() * noSounds.length)];
             randomSound.play().catch(e => console.log("Sound error"));
 
-            // 2. Change Text
+            // Change Text
             textIndex = (textIndex + 1) % noTexts.length;
             noBtn.innerText = noTexts[textIndex];
 
-            // 3. Turn on "Fixed Mode"
+            // Turn on "Fixed Mode"
             if (noBtn.style.position !== 'fixed') {
                 const rect = noBtn.getBoundingClientRect();
                 noBtn.style.position = 'fixed';
@@ -198,7 +208,7 @@
                 noBtn.style.top = rect.top + 'px';
             }
 
-            // 4. Calculate Random Hop
+            // Random Hop
             const jumpRange = 300; 
             const currentX = parseFloat(noBtn.style.left);
             const currentY = parseFloat(noBtn.style.top);
@@ -209,7 +219,7 @@
             let newX = currentX + shiftX;
             let newY = currentY + shiftY;
 
-            // 5. SAFETY CLAMP
+            // Safety Clamp
             const maxX = window.innerWidth - noBtn.offsetWidth - 20;
             const maxY = window.innerHeight - noBtn.offsetHeight - 20;
 
@@ -221,18 +231,23 @@
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
 
-            // 6. Grow Yes Button
+            // Grow Yes Button
             yesSize += 0.2;
             yesBtn.style.transform = `scale(${yesSize})`;
         });
 
+        // --- YES BUTTON LOGIC (TUNAK TIME) ---
         yesBtn.addEventListener('click', () => {
+            // Stop any funny sounds immediately
+            noSounds.forEach(s => { s.pause(); s.currentTime = 0; });
+
+            // Hide buttons, show message
             questionSection.classList.add('hidden');
             successMessage.classList.remove('hidden');
-            // Play the "Why/Celebration" sound on success
-            const celebrationSound = document.getElementById('sound3'); 
-            celebrationSound.currentTime = 0;
-            celebrationSound.play();
+            
+            // PLAY THE LEGEND
+            tunakSound.currentTime = 0;
+            tunakSound.play().catch(e => console.log("Sound error: " + e));
         });
     </script>
 </body>
