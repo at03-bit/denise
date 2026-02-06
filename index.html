@@ -4,9 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Für Denise Siegmund ❤️</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS STYLES --- */
+        body {
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px; /* Space between buttons */
+            margin-top: 20px;
+            min-height: 60px;
+            position: relative; /* Helps contain the buttons */
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #yes-btn {
+            background-color: #ff4081;
+            color: white;
+            transition: transform 0.2s ease;
+            z-index: 10; /* Ensures Yes is always on top */
+        }
+
+        #no-btn {
+            background-color: #757575;
+            color: white;
+            position: relative; /* Starts normal so you can see it! */
+            z-index: 5;
+            transition: 0.1s;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
         <div id="question-section">
             <h1 id="main-question">Will you be my Valentine, <br>Denise Siegmund? ❤️</h1>
@@ -25,6 +90,53 @@
     <audio id="bruh-sound" src="movie_1.mp3" preload="auto"></audio>
     <audio id="why-sound" src="why-meme.mp3" preload="auto"></audio>
 
-    <script src="script.js"></script>
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+        const bruhSound = document.getElementById('bruh-sound');
+        const questionSection = document.getElementById('question-section');
+        const successMessage = document.getElementById('success-message');
+
+        let yesSize = 1;
+        const noTexts = [
+            "No",
+            "Schatziii was machen Sie?",
+            "Nein bitte nicht",
+            "What da helllllll",
+            "Denise... stop!",
+            "Are you sure? 🥺"
+        ];
+        let textIndex = 0;
+
+        // The Magic Logic
+        noBtn.addEventListener('mouseover', () => {
+            // 1. Play Sound
+            bruhSound.currentTime = 0;
+            bruhSound.play().catch(e => console.log("Click page first to play sound!"));
+
+            // 2. Change Text
+            textIndex = (textIndex + 1) % noTexts.length;
+            noBtn.innerText = noTexts[textIndex];
+
+            // 3. Switch to "Running Away" mode
+            noBtn.style.position = 'absolute';
+
+            // 4. Move to random spot
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+
+            // 5. Make Yes Button Huge
+            yesSize += 0.2;
+            yesBtn.style.transform = `scale(${yesSize})`;
+        });
+
+        yesBtn.addEventListener('click', () => {
+            questionSection.classList.add('hidden');
+            successMessage.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>
