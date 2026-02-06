@@ -1,34 +1,30 @@
 body {
-    background: linear-gradient(135deg, #ffafbd, #ffc3a0); /* Cute pink gradient */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+    font-family: 'Arial', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    overflow: hidden; /* Prevents scrollbars when button moves */
+    overflow: hidden;
 }
 
 .container {
     text-align: center;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 50px;
-    border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-h1 {
-    color: #d32f2f;
-    font-size: 2.5rem;
-    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 .buttons {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    min-height: 100px;
+    gap: 30px;
+    margin-top: 20px;
+    min-height: 80px; /* Gives space for the buttons */
+    position: relative;
 }
 
 button {
@@ -38,21 +34,21 @@ button {
     border: none;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    white-space: nowrap; /* Keeps text on one line */
 }
 
 #yes-btn {
     background-color: #ff4081;
     color: white;
-    transition: transform 0.2s ease-in-out;
-    z-index: 100;
+    transition: transform 0.2s ease;
+    z-index: 10;
 }
 
 #no-btn {
     background-color: #757575;
     color: white;
-    position: absolute;
     transition: 0.1s;
+    /* Absolute position removed so it shows up normally first */
 }
 
 .hidden {
