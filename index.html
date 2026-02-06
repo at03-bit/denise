@@ -9,12 +9,12 @@
         body {
             background: linear-gradient(135deg, #ffafbd, #ffc3a0);
             font-family: 'Arial', sans-serif;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Keeps videos from scrolling the page */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
         }
 
         /* The Curtain Overlay */
@@ -58,13 +58,11 @@
             border-radius: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
-            z-index: 1;
+            z-index: 10; /* Keep text above videos initially */
+            max-width: 90%;
         }
 
-        h1 {
-            color: #d32f2f;
-            margin-bottom: 20px;
-        }
+        h1 { color: #d32f2f; margin-bottom: 20px; }
 
         .buttons {
             display: flex;
@@ -86,33 +84,30 @@
             white-space: nowrap;
         }
 
-        #yes-btn {
-            background-color: #ff4081;
-            color: white;
-            transition: transform 0.2s ease;
-            z-index: 10; 
+        #yes-btn { background-color: #ff4081; color: white; z-index: 20; }
+        #no-btn { background-color: #757575; color: white; position: relative; z-index: 100; transition: 0.1s ease; }
+
+        .hidden { display: none; }
+
+        /* --- CHAOS VIDEO STYLES --- */
+        .pop-up-video {
+            position: fixed;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            object-fit: cover;
+            z-index: 5; /* Behind the "Success" text but in front of background */
+            animation: floatAround 4s infinite ease-in-out alternate;
+            transition: transform 0.5s;
         }
 
-        #no-btn {
-            background-color: #757575;
-            color: white;
-            position: relative; 
-            z-index: 100; /* Stays on top */
-            transition: 0.1s ease;
+        /* This makes them bob up and down/left and right */
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(-5deg); }
+            100% { transform: translate(20px, -30px) rotate(5deg); }
         }
 
-        .hidden {
-            display: none;
-        }
-        
-        /* Fun animation for the success message */
-        .dance {
-            animation: bounce 0.5s infinite alternate;
-        }
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-20px); }
-        }
+        .dance-text { animation: bounce 0.5s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
     </style>
 </head>
 <body>
@@ -132,14 +127,15 @@
         </div>
         
         <div id="success-message" class="hidden">
-            <h1 class="dance">Yay! ich liebe dichh schatziii 🥰</h1>
+            <h1 class="dance-text">Yay! ich liebe dichh schatziii 🥰</h1>
             <p>Bis GLeich</p>
         </div>
     </div>
-    <audio id="sound1" src="movie_1.mp3" preload="auto"></audio>
-    <audio id="sound2" src="nooo.swf.mp3" preload="auto"></audio>
-    <audio id="sound3" src="why-meme.mp3" preload="auto"></audio>
-    <audio id="tunak-sound" src="tunak-tunak-tun.mp3" preload="auto"></audio>
+
+    <audio id="sound1" src="movie_1.mp3"></audio>
+    <audio id="sound2" src="nooo.swf.mp3"></audio>
+    <audio id="sound3" src="why-meme.mp3"></audio>
+    <audio id="tunak-sound" src="tunak-tunak-tun.mp3"></audio>
 
     <script>
         const noBtn = document.getElementById('no-btn');
@@ -149,17 +145,14 @@
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
         
-        // Audio elements
         const tunakSound = document.getElementById('tunak-sound');
-        
-        // List of funny sounds for the NO button
         const noSounds = [
-            document.getElementById('sound1'),
-            document.getElementById('sound2'),
+            document.getElementById('sound1'), 
+            document.getElementById('sound2'), 
             document.getElementById('sound3')
         ];
-
-        let yesSize = 1;
+        
+        // YOUR CUSTOM TEXTS
         const noTexts = [
             "No",
             "Schatziii was machen Sie?",
@@ -168,38 +161,37 @@
             "SCHÄTZCHENNN",
             "bist du dir sicher ??? 🥺"
         ];
+        
         let textIndex = 0;
+        let yesSize = 1;
 
-        // --- UNLOCK AUDIO ---
+        // --- START BTN ---
         startBtn.addEventListener('click', () => {
             overlay.style.opacity = '0';
             setTimeout(() => { overlay.style.display = 'none'; }, 500);
-
-            // Quickly wake up all sounds
-            noSounds.forEach(sound => {
-                sound.volume = 0.5;
-                sound.play().then(() => { sound.pause(); sound.currentTime = 0; }).catch(() => {});
+            
+            // Unlock audio (play slightly then pause)
+            tunakSound.volume = 0; 
+            tunakSound.play().then(() => { tunakSound.pause(); tunakSound.volume = 1.0; }).catch(()=>{});
+            
+            noSounds.forEach(s => { 
+                s.volume = 0; 
+                s.play().then(()=> { s.pause(); s.volume = 0.5; }).catch(()=>{});
             });
-            tunakSound.volume = 1.0; // Full volume for Tunak
-            tunakSound.play().then(() => { tunakSound.pause(); tunakSound.currentTime = 0; }).catch(() => {});
         });
 
-        // --- NO BUTTON LOGIC ---
+        // --- NO BUTTON (RUN AWAY) ---
         noBtn.addEventListener('mouseover', () => {
-            // Stop Tunak if it's somehow playing
-            tunakSound.pause(); 
-            tunakSound.currentTime = 0;
+            // Stop Tunak if playing
+            tunakSound.pause(); tunakSound.currentTime = 0;
 
-            // Pick random funny sound
-            noSounds.forEach(s => { s.pause(); s.currentTime = 0; }); // Stop others
             const randomSound = noSounds[Math.floor(Math.random() * noSounds.length)];
-            randomSound.play().catch(e => console.log("Sound error"));
+            randomSound.currentTime = 0; 
+            randomSound.play().catch(()=>{});
 
-            // Change Text
             textIndex = (textIndex + 1) % noTexts.length;
             noBtn.innerText = noTexts[textIndex];
-
-            // Turn on "Fixed Mode"
+            
             if (noBtn.style.position !== 'fixed') {
                 const rect = noBtn.getBoundingClientRect();
                 noBtn.style.position = 'fixed';
@@ -207,11 +199,10 @@
                 noBtn.style.top = rect.top + 'px';
             }
 
-            // Random Hop
+            // Random Jump
             const jumpRange = 300; 
             const currentX = parseFloat(noBtn.style.left);
             const currentY = parseFloat(noBtn.style.top);
-            
             const shiftX = (Math.random() * jumpRange) - (jumpRange / 2);
             const shiftY = (Math.random() * jumpRange) - (jumpRange / 2);
 
@@ -235,19 +226,51 @@
             yesBtn.style.transform = `scale(${yesSize})`;
         });
 
-        // --- YES BUTTON LOGIC (TUNAK TIME) ---
+        // --- YES BUTTON (CHAOS MODE) ---
         yesBtn.addEventListener('click', () => {
-            // Stop any funny sounds immediately
             noSounds.forEach(s => { s.pause(); s.currentTime = 0; });
-
-            // Hide buttons, show message
+            
             questionSection.classList.add('hidden');
             successMessage.classList.remove('hidden');
-            
-            // PLAY THE LEGEND
+
+            // Play Music
             tunakSound.currentTime = 0;
-            tunakSound.play().catch(e => console.log("Sound error: " + e));
+            tunakSound.play();
+
+            // Spawn 15 Floating Videos
+            for(let i = 0; i < 15; i++) {
+                spawnFloatingVideo(i);
+            }
         });
+
+        function spawnFloatingVideo(index) {
+            const video = document.createElement('video');
+            video.src = "3fc69d21-7d1e-47c7-aa95-60ef63759e2f.mp4"; // YOUR FILE
+            video.classList.add('pop-up-video');
+            video.muted = true; // Mute videos so they don't echo
+            video.loop = true;
+            video.playsInline = true;
+            
+            // Random Size (between 100px and 250px)
+            const size = Math.floor(Math.random() * 150) + 100;
+            video.style.width = size + 'px';
+
+            // Random Position
+            const x = Math.random() * (window.innerWidth - 200);
+            const y = Math.random() * (window.innerHeight - 200);
+            video.style.left = x + 'px';
+            video.style.top = y + 'px';
+
+            // Stagger animation delays so they don't move in sync
+            video.style.animationDelay = (Math.random() * 2) + 's';
+
+            document.body.appendChild(video);
+            
+            // Play with a slight delay for pop-in effect
+            setTimeout(() => {
+                video.play();
+            }, index * 200);
+        }
     </script>
 </body>
 </html>
