@@ -25,7 +25,7 @@
             width: 100%;
             height: 100%;
             background: rgba(255, 175, 189, 0.98);
-            z-index: 9999; /* Highest priority */
+            z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -128,18 +128,24 @@
         </div>
     </div>
 
-    <audio id="bruh-sound" src="movie_1.mp3" preload="auto"></audio>
-    <audio id="why-sound" src="why-meme.mp3" preload="auto"></audio>
+    <audio id="sound1" src="movie_1.mp3" preload="auto"></audio>
+    <audio id="sound2" src="nooo.swf.mp3" preload="auto"></audio>
+    <audio id="sound3" src="why-meme.mp3" preload="auto"></audio>
 
     <script>
         const noBtn = document.getElementById('no-btn');
         const yesBtn = document.getElementById('yes-btn');
-        const bruhSound = document.getElementById('bruh-sound');
-        const whySound = document.getElementById('why-sound');
         const questionSection = document.getElementById('question-section');
         const successMessage = document.getElementById('success-message');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
+
+        // Create a list of the 3 sounds
+        const sounds = [
+            document.getElementById('sound1'), // Bruh
+            document.getElementById('sound2'), // Nooo
+            document.getElementById('sound3')  // Why
+        ];
 
         let yesSize = 1;
         const noTexts = [
@@ -152,35 +158,39 @@
         ];
         let textIndex = 0;
 
-        // --- FIXED CLICK HANDLER ---
+        // --- FIXED CLICK HANDLER (Unlocks all sounds) ---
         startBtn.addEventListener('click', () => {
-            // 1. Hide the curtain IMMEDIATELY (Do not wait for sound)
             overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 500);
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
 
-            // 2. Try to unlock audio (in the background)
-            bruhSound.volume = 0.5;
-            bruhSound.play().then(() => {
-                bruhSound.pause();
-                bruhSound.currentTime = 0;
-            }).catch(error => {
-                console.log("Audio skipped (File might be missing): " + error);
+            // Quickly play/pause all sounds to unlock them
+            sounds.forEach(sound => {
+                sound.volume = 0.5;
+                sound.play().then(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }).catch(() => {});
             });
         });
 
         // --- NO BUTTON LOGIC ---
         noBtn.addEventListener('mouseover', () => {
-            // Play Sound safely
-            bruhSound.currentTime = 0;
-            bruhSound.play().catch(e => console.log("Sound error"));
+            // 1. PICK A RANDOM SOUND
+            // Stop all sounds first so they don't overlap
+            sounds.forEach(sound => {
+                sound.pause();
+                sound.currentTime = 0;
+            });
 
-            // Change Text
+            // Randomly choose sound 0, 1, or 2
+            const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+            randomSound.play().catch(e => console.log("Sound error"));
+
+            // 2. Change Text
             textIndex = (textIndex + 1) % noTexts.length;
             noBtn.innerText = noTexts[textIndex];
 
-            // Turn on "Fixed Mode" (Locks it to screen coordinates)
+            // 3. Turn on "Fixed Mode"
             if (noBtn.style.position !== 'fixed') {
                 const rect = noBtn.getBoundingClientRect();
                 noBtn.style.position = 'fixed';
@@ -188,7 +198,7 @@
                 noBtn.style.top = rect.top + 'px';
             }
 
-            // Calculate Random Hop
+            // 4. Calculate Random Hop
             const jumpRange = 300; 
             const currentX = parseFloat(noBtn.style.left);
             const currentY = parseFloat(noBtn.style.top);
@@ -199,7 +209,7 @@
             let newX = currentX + shiftX;
             let newY = currentY + shiftY;
 
-            // SAFETY: Force it to stay on screen
+            // 5. SAFETY CLAMP
             const maxX = window.innerWidth - noBtn.offsetWidth - 20;
             const maxY = window.innerHeight - noBtn.offsetHeight - 20;
 
@@ -211,7 +221,7 @@
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
 
-            // Grow Yes Button
+            // 6. Grow Yes Button
             yesSize += 0.2;
             yesBtn.style.transform = `scale(${yesSize})`;
         });
@@ -219,7 +229,10 @@
         yesBtn.addEventListener('click', () => {
             questionSection.classList.add('hidden');
             successMessage.classList.remove('hidden');
-            whySound.play().catch(e => console.log("Sound error"));
+            // Play the "Why/Celebration" sound on success
+            const celebrationSound = document.getElementById('sound3'); 
+            celebrationSound.currentTime = 0;
+            celebrationSound.play();
         });
     </script>
 </body>
