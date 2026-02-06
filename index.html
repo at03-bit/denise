@@ -14,7 +14,41 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Stops scrollbars */
+            overflow: hidden;
+        }
+
+        /* The Curtain Overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 175, 189, 0.98);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        #start-btn {
+            padding: 20px 40px;
+            font-size: 2rem;
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .container {
@@ -23,6 +57,8 @@
             padding: 40px;
             border-radius: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
@@ -54,15 +90,15 @@
             background-color: #ff4081;
             color: white;
             transition: transform 0.2s ease;
-            z-index: 10;
+            z-index: 10; /* High priority */
         }
 
         #no-btn {
             background-color: #757575;
             color: white;
-            position: relative; /* Starts normal */
-            z-index: 5;
-            transition: 0.1s ease; /* Faster transition for hops */
+            position: relative; /* Starts visible next to Yes */
+            z-index: 100; /* SUPER High priority - stays on top */
+            transition: 0.1s ease;
         }
 
         .hidden {
@@ -71,6 +107,11 @@
     </style>
 </head>
 <body>
+
+    <div id="overlay">
+        <h1>For Denise... ❤️</h1>
+        <button id="start-btn">Click to Open</button>
+    </div>
 
     <div class="container">
         <div id="question-section">
@@ -82,8 +123,8 @@
         </div>
         
         <div id="success-message" class="hidden">
-            <h1>Yay! See you on the 14th! 🥰</h1>
-            <p>I love you, Denise!</p>
+            <h1>Yay! ich liebe dich so sehrrrrr 🥰</h1>
+            <p>Ich liebe dich Schatzii!</p>
         </div>
     </div>
 
@@ -95,8 +136,11 @@
         const noBtn = document.getElementById('no-btn');
         const yesBtn = document.getElementById('yes-btn');
         const bruhSound = document.getElementById('bruh-sound');
+        const whySound = document.getElementById('why-sound');
         const questionSection = document.getElementById('question-section');
         const successMessage = document.getElementById('success-message');
+        const overlay = document.getElementById('overlay');
+        const startBtn = document.getElementById('start-btn');
 
         let yesSize = 1;
         const noTexts = [
@@ -109,62 +153,10 @@
         ];
         let textIndex = 0;
 
-        noBtn.addEventListener('mouseover', () => {
-            // 1. Play Sound
-            bruhSound.currentTime = 0;
-            bruhSound.play().catch(e => console.log("Sound blocked until click"));
-
-            // 2. Change Text
-            textIndex = (textIndex + 1) % noTexts.length;
-            noBtn.innerText = noTexts[textIndex];
-
-            // 3. Make it absolute (Running Mode)
-            // We need to set the current position first before moving it
-            if (noBtn.style.position !== 'absolute') {
-                const rect = noBtn.getBoundingClientRect();
-                noBtn.style.position = 'absolute';
-                noBtn.style.left = rect.left + 'px';
-                noBtn.style.top = rect.top + 'px';
-            }
-
-            // 4. Calculate "Small Step" Movement
-            // Define how far it can jump (e.g., 200px)
-            const jumpRange = 250; 
-
-            // Calculate current X and Y
-            const currentX = parseFloat(noBtn.style.left) || noBtn.offsetLeft;
-            const currentY = parseFloat(noBtn.style.top) || noBtn.offsetTop;
-
-            // Generate a random shift (-125px to +125px)
-            const shiftX = (Math.random() * jumpRange) - (jumpRange / 2);
-            const shiftY = (Math.random() * jumpRange) - (jumpRange / 2);
-
-            let newX = currentX + shiftX;
-            let newY = currentY + shiftY;
-
-            // 5. SAFETY CLAMP (Keep it on screen!)
-            // Ensures X is between 10px and (Screen Width - Button Width - 10px)
-            const maxX = window.innerWidth - noBtn.offsetWidth - 10;
-            const maxY = window.innerHeight - noBtn.offsetHeight - 10;
-
-            if (newX < 10) newX = 10;
-            if (newX > maxX) newX = maxX;
-            if (newY < 10) newY = 10;
-            if (newY > maxY) newY = maxY;
-
-            // Apply new position
-            noBtn.style.left = `${newX}px`;
-            noBtn.style.top = `${newY}px`;
-
-            // 6. Grow Yes Button
-            yesSize += 0.2;
-            yesBtn.style.transform = `scale(${yesSize})`;
-        });
-
-        yesBtn.addEventListener('click', () => {
-            questionSection.classList.add('hidden');
-            successMessage.classList.remove('hidden');
-        });
-    </script>
-</body>
-</html>
+        // 1. The "Unlock Audio" Click
+        startBtn.addEventListener('click', () => {
+            bruhSound.volume = 0.5; 
+            bruhSound.play().then(() => {
+                bruhSound.pause();
+                bruhSound.currentTime = 0;
+            }).catch(
