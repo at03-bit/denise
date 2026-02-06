@@ -25,7 +25,7 @@
             width: 100%;
             height: 100%;
             background: rgba(255, 175, 189, 0.98);
-            z-index: 9999;
+            z-index: 9999; /* Highest priority */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -90,14 +90,14 @@
             background-color: #ff4081;
             color: white;
             transition: transform 0.2s ease;
-            z-index: 10; /* High priority */
+            z-index: 10; 
         }
 
         #no-btn {
             background-color: #757575;
             color: white;
-            position: relative; /* Starts visible next to Yes */
-            z-index: 100; /* SUPER High priority - stays on top */
+            position: relative; 
+            z-index: 100; /* Stays on top */
             transition: 0.1s ease;
         }
 
@@ -123,8 +123,8 @@
         </div>
         
         <div id="success-message" class="hidden">
-            <h1>Yay! ich liebe dich so sehrrrrr 🥰</h1>
-            <p>Ich liebe dich Schatzii!</p>
+            <h1>Yay! See you on the 14th! 🥰</h1>
+            <p>I love you, Denise!</p>
         </div>
     </div>
 
@@ -132,7 +132,6 @@
     <audio id="why-sound" src="why-meme.mp3" preload="auto"></audio>
 
     <script>
-        /* --- JAVASCRIPT LOGIC --- */
         const noBtn = document.getElementById('no-btn');
         const yesBtn = document.getElementById('yes-btn');
         const bruhSound = document.getElementById('bruh-sound');
@@ -153,10 +152,75 @@
         ];
         let textIndex = 0;
 
-        // 1. The "Unlock Audio" Click
+        // --- FIXED CLICK HANDLER ---
         startBtn.addEventListener('click', () => {
-            bruhSound.volume = 0.5; 
+            // 1. Hide the curtain IMMEDIATELY (Do not wait for sound)
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+
+            // 2. Try to unlock audio (in the background)
+            bruhSound.volume = 0.5;
             bruhSound.play().then(() => {
                 bruhSound.pause();
                 bruhSound.currentTime = 0;
-            }).catch(
+            }).catch(error => {
+                console.log("Audio skipped (File might be missing): " + error);
+            });
+        });
+
+        // --- NO BUTTON LOGIC ---
+        noBtn.addEventListener('mouseover', () => {
+            // Play Sound safely
+            bruhSound.currentTime = 0;
+            bruhSound.play().catch(e => console.log("Sound error"));
+
+            // Change Text
+            textIndex = (textIndex + 1) % noTexts.length;
+            noBtn.innerText = noTexts[textIndex];
+
+            // Turn on "Fixed Mode" (Locks it to screen coordinates)
+            if (noBtn.style.position !== 'fixed') {
+                const rect = noBtn.getBoundingClientRect();
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = rect.left + 'px';
+                noBtn.style.top = rect.top + 'px';
+            }
+
+            // Calculate Random Hop
+            const jumpRange = 300; 
+            const currentX = parseFloat(noBtn.style.left);
+            const currentY = parseFloat(noBtn.style.top);
+            
+            const shiftX = (Math.random() * jumpRange) - (jumpRange / 2);
+            const shiftY = (Math.random() * jumpRange) - (jumpRange / 2);
+
+            let newX = currentX + shiftX;
+            let newY = currentY + shiftY;
+
+            // SAFETY: Force it to stay on screen
+            const maxX = window.innerWidth - noBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 20;
+
+            if (newX < 20) newX = 20;
+            if (newX > maxX) newX = maxX;
+            if (newY < 20) newY = 20;
+            if (newY > maxY) newY = maxY;
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+
+            // Grow Yes Button
+            yesSize += 0.2;
+            yesBtn.style.transform = `scale(${yesSize})`;
+        });
+
+        yesBtn.addEventListener('click', () => {
+            questionSection.classList.add('hidden');
+            successMessage.classList.remove('hidden');
+            whySound.play().catch(e => console.log("Sound error"));
+        });
+    </script>
+</body>
+</html>
